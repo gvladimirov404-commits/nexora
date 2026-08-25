@@ -192,6 +192,19 @@ contract NexoraTaskEscrowTest is Test {
         escrow.refundPayment(taskId);
     }
 
+    function test_AttackerCannotRefundAfterDeadline() public {
+        uint256 taskId = createAndFundTask();
+
+        vm.prank(agent);
+        escrow.submitResult(taskId, keccak256("late-result"));
+
+        vm.warp(deadline + 1);
+
+        vm.prank(attacker);
+        vm.expectRevert(NexoraTaskEscrow.Unauthorized.selector);
+        escrow.refundAfterDeadline(taskId);
+    }
+
     function test_RefundAfterDeadline() public {
         uint256 taskId = createAndFundTask();
 
