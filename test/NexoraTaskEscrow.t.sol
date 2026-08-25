@@ -123,6 +123,7 @@ contract NexoraTaskEscrowTest is Test {
 
         uint256 beforeBalance = agent.balance;
 
+        vm.prank(agent);
         escrow.releasePayment(taskId);
 
         assertEq(agent.balance, beforeBalance + payment);
@@ -235,9 +236,11 @@ contract NexoraTaskEscrowTest is Test {
         vm.prank(verifier);
         escrow.verifyTask(taskId, true, keccak256("verification-v3"));
 
+        vm.prank(agent);
         escrow.releasePayment(taskId);
 
         vm.expectRevert(NexoraTaskEscrow.InvalidStatus.selector);
+        vm.prank(agent);
         escrow.releasePayment(taskId);
     }
 
@@ -251,6 +254,44 @@ contract NexoraTaskEscrowTest is Test {
         vm.prank(verifier);
         vm.expectRevert(NexoraTaskEscrow.InvalidStatus.selector);
         escrow.verifyTask(taskId, true, bytes32(0));
+    }
+
+
+    function test_AnyoneCanReleaseAfterVerification() public {
+        uint256 taskId = createAndFundTask();
+
+        vm.prank(agent);
+        escrow.submitResult(taskId, keccak256("result-v1"));
+
+        vm.prank(verifier);
+        escrow.verifyTask(
+            taskId,
+            true,
+            keccak256("verification-v1")
+        );
+
+        vm.prank(attacker);
+        vm.expectRevert(NexoraTaskEscrow.Unauthorized.selector);
+        escrow.releasePayment(taskId);
+    }
+
+
+    function test_AttackerCannotReleasePayment() public {
+        uint256 taskId = createAndFundTask();
+
+        vm.prank(agent);
+        escrow.submitResult(taskId, keccak256("result-v1"));
+
+        vm.prank(verifier);
+        escrow.verifyTask(
+            taskId,
+            true,
+            keccak256("verification-v1")
+        );
+
+        vm.prank(attacker);
+        vm.expectRevert(NexoraTaskEscrow.Unauthorized.selector);
+        escrow.releasePayment(taskId);
     }
 
 }
