@@ -71,6 +71,45 @@ contract NexoraTaskEscrowTest is Test {
         assertEq(uint256(status), uint256(NexoraTaskEscrow.Status.Created));
     }
 
+    function test_CreateTaskRejectsExpiredDeadline() public {
+        vm.prank(creator);
+        vm.expectRevert(NexoraTaskEscrow.InvalidDeadline.selector);
+        escrow.createTask(
+            agent,
+            verifier,
+            payment,
+            block.timestamp,
+            keccak256("policy-expired")
+        );
+    }
+
+    function test_SubmitResultRejectsAfterDeadline() public {
+        uint256 taskId = createAndFundTask();
+
+        vm.warp(deadline + 1);
+
+        vm.prank(agent);
+        vm.expectRevert(NexoraTaskEscrow.DeadlineExpired.selector);
+        escrow.submitResult(taskId, keccak256("late-result"));
+    }
+
+    function test_VerifyTaskRejectsAfterDeadline() public {
+        uint256 taskId = createAndFundTask();
+
+        vm.prank(agent);
+        escrow.submitResult(taskId, keccak256("result-v1"));
+
+        vm.warp(deadline + 1);
+
+        vm.prank(verifier);
+        vm.expectRevert(NexoraTaskEscrow.DeadlineExpired.selector);
+        escrow.verifyTask(
+            taskId,
+            true,
+            keccak256("verification-late")
+        );
+    }
+
     function test_FundTask() public {
         uint256 taskId = createAndFundTask();
 
