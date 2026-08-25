@@ -154,6 +154,7 @@ contract NexoraTaskEscrowTest is Test {
 
         uint256 beforeBalance = creator.balance;
 
+        vm.prank(creator);
         escrow.refundPayment(taskId);
 
         assertEq(creator.balance, beforeBalance + payment);
@@ -171,6 +172,24 @@ contract NexoraTaskEscrowTest is Test {
         ) = escrow.tasks(taskId);
 
         assertEq(uint256(status), uint256(NexoraTaskEscrow.Status.Refunded));
+    }
+
+    function test_AttackerCannotRefundFailedTask() public {
+        uint256 taskId = createAndFundTask();
+
+        vm.prank(agent);
+        escrow.submitResult(taskId, keccak256("bad-result"));
+
+        vm.prank(verifier);
+        escrow.verifyTask(
+            taskId,
+            false,
+            keccak256("verification-failed-v2")
+        );
+
+        vm.prank(attacker);
+        vm.expectRevert(NexoraTaskEscrow.Unauthorized.selector);
+        escrow.refundPayment(taskId);
     }
 
     function test_RefundAfterDeadline() public {

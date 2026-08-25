@@ -240,6 +240,10 @@ contract NexoraTaskEscrow {
             revert InvalidStatus();
         }
 
+        if (msg.sender != task.creator) {
+            revert Unauthorized();
+        }
+
         task.status = Status.Refunded;
 
         (bool success, ) = payable(task.creator).call{value: task.payment}("");
