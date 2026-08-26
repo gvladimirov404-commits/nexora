@@ -1,66 +1,36 @@
-## Foundry
+# NEXORA
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+## Policy-Verified Task Escrow for AI Agents
 
-Foundry consists of:
+NEXORA is a smart-contract MVP for controlled settlement of tasks performed by AI agents.
 
-- **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
-- **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
-- **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
-- **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+The core principle is:
 
-## Documentation
+**Agent → Task → Policy → Verification → Decision → Settlement**
 
-https://book.getfoundry.sh/
+An agent claiming that a task is complete is not, by itself, sufficient to release payment.
 
-## Usage
+The escrow records the task, the agreed policy identifier, the submitted result, the verification decision, and the settlement state.
 
-### Build
+---
 
-```shell
-$ forge build
-```
+## Current MVP
 
-### Test
+The current implementation is a Solidity escrow contract:
 
-```shell
-$ forge test
-```
+`src/NexoraTaskEscrow.sol`
 
-### Format
+It supports the following lifecycle:
 
-```shell
-$ forge fmt
-```
+```text
+Created
+   ↓
+Funded
+   ↓
+Submitted
+   ↓
+Passed ─────→ Released
+   │
+   └────────→ Failed ─────→ Refunded
 
-### Gas Snapshots
 
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
