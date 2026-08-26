@@ -129,6 +129,44 @@ contract NexoraTaskEscrowTest is Test {
         assertEq(uint256(status), uint256(NexoraTaskEscrow.Status.Funded));
     }
 
+    function test_FundTaskRejectsIncorrectAmount() public {
+        vm.prank(creator);
+        uint256 taskId = escrow.createTask(
+            agent,
+            verifier,
+            payment,
+            deadline,
+            keccak256("policy-v1")
+        );
+
+        vm.prank(creator);
+        vm.expectRevert(NexoraTaskEscrow.IncorrectFunding.selector);
+        escrow.fundTask{value: payment - 1}(taskId);
+    }
+
+    function test_FundTaskRejectsOverpayment() public {
+        vm.prank(creator);
+        uint256 taskId = escrow.createTask(
+            agent,
+            verifier,
+            payment,
+            deadline,
+            keccak256("policy-v1")
+        );
+
+        vm.prank(creator);
+        vm.expectRevert(NexoraTaskEscrow.IncorrectFunding.selector);
+        escrow.fundTask{value: payment + 1}(taskId);
+    }
+
+    function test_FundTaskCannotBeCalledTwice() public {
+        uint256 taskId = createAndFundTask();
+
+        vm.prank(creator);
+        vm.expectRevert(NexoraTaskEscrow.InvalidStatus.selector);
+        escrow.fundTask{value: payment}(taskId);
+    }
+
     function test_SubmitResult() public {
         uint256 taskId = createAndFundTask();
         bytes32 resultHash = keccak256("result-v1");
