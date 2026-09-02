@@ -83,6 +83,21 @@ contract NexoraTaskEscrowTest is Test {
         );
     }
 
+    function test_SubmitResultAllowedAtExactDeadline() public {
+        uint256 taskId = createAndFundTask();
+
+        vm.warp(deadline);
+
+        vm.prank(agent);
+        escrow.submitResult(taskId, keccak256("result-at-deadline"));
+
+        (, , , , , , bytes32 storedResultHash, NexoraTaskEscrow.Status status) =
+            escrow.tasks(taskId);
+
+        assertEq(storedResultHash, keccak256("result-at-deadline"));
+        assertEq(uint256(status), uint256(NexoraTaskEscrow.Status.Submitted));
+    }
+
     function test_SubmitResultRejectsAfterDeadline() public {
         uint256 taskId = createAndFundTask();
 
