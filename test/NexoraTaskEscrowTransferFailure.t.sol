@@ -198,4 +198,43 @@ contract NexoraTaskEscrowTransferFailureTest is Test {
 
         assertEq(address(escrow).balance, payment);
     }
+
+    function test_RefundAfterDeadlineTransferFailureRestoresSubmittedState() public {
+        uint256 taskId = rejectingCreator.createTaskFor(
+            agent,
+            verifier,
+            payment,
+            deadline,
+            keccak256("policy-submitted-deadline-failure")
+        );
+
+        rejectingCreator.fundTaskFor{value: payment}(taskId);
+
+        vm.prank(agent);
+        escrow.submitResult(taskId, keccak256("result"));
+
+        vm.warp(deadline + 1);
+
+        vm.expectRevert(NexoraTaskEscrow.TransferFailed.selector);
+        rejectingCreator.refundAfterDeadlineFor(taskId);
+
+        (
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            NexoraTaskEscrow.Status status
+        ) = escrow.tasks(taskId);
+
+        assertEq(
+            uint256(status),
+            uint256(NexoraTaskEscrow.Status.Submitted)
+        );
+
+        assertEq(address(escrow).balance, payment);
+    }
+
 }

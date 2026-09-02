@@ -276,12 +276,13 @@ contract NexoraTaskEscrow {
             revert DeadlineNotReached();
         }
 
+        Status previousStatus = task.status;
         task.status = Status.Refunded;
 
         (bool success, ) = payable(task.creator).call{value: task.payment}("");
 
         if (!success) {
-            task.status = Status.Funded;
+            task.status = previousStatus;
             revert TransferFailed();
         }
 
