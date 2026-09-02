@@ -31,6 +31,7 @@ contract NexoraTaskEscrow {
     error InvalidAddress();
     error InvalidPayment();
     error InvalidResultHash();
+    error InvalidVerificationHash();
     error InvalidDeadline();
     error TaskNotFound();
     error InvalidStatus();
@@ -198,7 +199,7 @@ contract NexoraTaskEscrow {
         }
 
         if (verificationHash == bytes32(0)) {
-            revert InvalidStatus();
+            revert InvalidVerificationHash();
         }
 
         verificationHashes[taskId] = verificationHash;

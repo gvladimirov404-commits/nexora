@@ -394,7 +394,7 @@ contract NexoraTaskEscrowTest is Test {
         escrow.submitResult(taskId, keccak256("result-v1"));
 
         vm.prank(verifier);
-        vm.expectRevert(NexoraTaskEscrow.InvalidStatus.selector);
+        vm.expectRevert(NexoraTaskEscrow.InvalidVerificationHash.selector);
         escrow.verifyTask(taskId, true, bytes32(0));
     }
 
