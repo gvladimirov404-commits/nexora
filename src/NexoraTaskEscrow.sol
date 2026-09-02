@@ -30,6 +30,7 @@ contract NexoraTaskEscrow {
 
     error InvalidAddress();
     error InvalidPayment();
+    error InvalidPolicyHash();
     error InvalidResultHash();
     error InvalidVerificationHash();
     error InvalidDeadline();
@@ -89,6 +90,10 @@ contract NexoraTaskEscrow {
 
         if (payment == 0) {
             revert InvalidPayment();
+        }
+
+        if (policyHash == bytes32(0)) {
+            revert InvalidPolicyHash();
         }
 
         if (deadline <= block.timestamp) {

@@ -71,6 +71,18 @@ contract NexoraTaskEscrowTest is Test {
         assertEq(uint256(status), uint256(NexoraTaskEscrow.Status.Created));
     }
 
+    function test_CreateTaskRejectsEmptyPolicyHash() public {
+        vm.prank(creator);
+        vm.expectRevert(NexoraTaskEscrow.InvalidPolicyHash.selector);
+        escrow.createTask(
+            agent,
+            verifier,
+            payment,
+            deadline,
+            bytes32(0)
+        );
+    }
+
     function test_CreateTaskRejectsExpiredDeadline() public {
         vm.prank(creator);
         vm.expectRevert(NexoraTaskEscrow.InvalidDeadline.selector);
