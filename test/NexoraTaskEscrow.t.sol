@@ -399,7 +399,7 @@ contract NexoraTaskEscrowTest is Test {
     }
 
 
-    function test_AnyoneCanReleaseAfterVerification() public {
+    function test_UnauthorizedCannotReleaseAfterVerification() public {
         uint256 taskId = createAndFundTask();
 
         vm.prank(agent);
