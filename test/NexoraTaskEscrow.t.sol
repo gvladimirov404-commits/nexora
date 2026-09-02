@@ -167,6 +167,24 @@ contract NexoraTaskEscrowTest is Test {
         escrow.fundTask{value: payment}(taskId);
     }
 
+    function test_SubmitResultRejectsEmptyResultHash() public {
+        vm.prank(creator);
+        uint256 taskId = escrow.createTask(
+            agent,
+            verifier,
+            payment,
+            deadline,
+            bytes32(uint256(1))
+        );
+
+        vm.prank(creator);
+        escrow.fundTask{value: payment}(taskId);
+
+        vm.prank(agent);
+        vm.expectRevert(NexoraTaskEscrow.InvalidResultHash.selector);
+        escrow.submitResult(taskId, bytes32(0));
+    }
+
     function test_SubmitResult() public {
         uint256 taskId = createAndFundTask();
         bytes32 resultHash = keccak256("result-v1");
@@ -401,6 +419,13 @@ contract NexoraTaskEscrowTest is Test {
         vm.prank(attacker);
         vm.expectRevert(NexoraTaskEscrow.Unauthorized.selector);
         escrow.releasePayment(taskId);
+    }
+
+
+    function test_FundTaskRejectsUnknownTask() public {
+        vm.prank(creator);
+        vm.expectRevert(NexoraTaskEscrow.TaskNotFound.selector);
+        escrow.fundTask(999);
     }
 
 }
