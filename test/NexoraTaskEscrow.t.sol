@@ -234,6 +234,33 @@ contract NexoraTaskEscrowTest is Test {
         assertEq(uint256(status), uint256(NexoraTaskEscrow.Status.Submitted));
     }
 
+    function test_VerificationHashIsDerivedFromTaskData() public {
+        uint256 taskId = createAndFundTask();
+        bytes32 resultHash = keccak256("result-v1");
+        bytes32 evidenceHash = keccak256("evidence-v1");
+
+        vm.prank(agent);
+        escrow.submitResult(taskId, resultHash);
+
+        bytes32 expectedVerificationHash = keccak256(
+            abi.encode(
+                taskId,
+                keccak256("policy-v1"),
+                resultHash,
+                evidenceHash,
+                true
+            )
+        );
+
+        vm.prank(verifier);
+        escrow.verifyTask(taskId, true, evidenceHash);
+
+        assertEq(
+            escrow.verificationHashes(taskId),
+            expectedVerificationHash
+        );
+    }
+
     function test_VerifyPassedAndReleasePayment() public {
         uint256 taskId = createAndFundTask();
 

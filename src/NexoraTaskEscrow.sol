@@ -183,7 +183,7 @@ contract NexoraTaskEscrow {
     function verifyTask(
         uint256 taskId,
         bool passed,
-        bytes32 verificationHash
+        bytes32 evidenceHash
     ) external {
         Task storage task = tasks[taskId];
 
@@ -203,9 +203,19 @@ contract NexoraTaskEscrow {
             revert DeadlineExpired();
         }
 
-        if (verificationHash == bytes32(0)) {
+        if (evidenceHash == bytes32(0)) {
             revert InvalidVerificationHash();
         }
+
+        bytes32 verificationHash = keccak256(
+            abi.encode(
+                taskId,
+                task.policyHash,
+                task.resultHash,
+                evidenceHash,
+                passed
+            )
+        );
 
         verificationHashes[taskId] = verificationHash;
         task.status = passed ? Status.Passed : Status.Failed;
