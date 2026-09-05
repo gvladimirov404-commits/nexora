@@ -34,6 +34,43 @@ def parse_github_repository(url: str) -> GitHubRepository:
     )
 
 
+def get_github_default_branch_commit(
+    repository_url: str,
+    timeout: int = 10,
+) -> str:
+    repository = parse_github_repository(repository_url)
+
+    api_url = (
+        f"https://api.github.com/repos/"
+        f"{repository.owner}/{repository.name}"
+    )
+
+    response = requests.get(
+        api_url,
+        timeout=timeout,
+        headers={"Accept": "application/vnd.github+json"},
+    )
+    response.raise_for_status()
+
+    repository_data = response.json()
+    default_branch = repository_data["default_branch"]
+
+    branch_url = (
+        f"https://api.github.com/repos/"
+        f"{repository.owner}/{repository.name}/commits/"
+        f"{default_branch}"
+    )
+
+    branch_response = requests.get(
+        branch_url,
+        timeout=timeout,
+        headers={"Accept": "application/vnd.github+json"},
+    )
+    branch_response.raise_for_status()
+
+    return branch_response.json()["sha"]
+
+
 def check_github_repository(
     policy: Policy,
     evidence: Evidence,

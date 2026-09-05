@@ -140,3 +140,43 @@ def test_github_repository_checks_files_at_evidence_commit(mock_get):
 
     assert "?ref=abc123" in calls[2].args[0]
     assert "?ref=abc123" in calls[3].args[0]
+
+
+def test_get_github_default_branch_commit():
+    from verifier.github_checker import get_github_default_branch_commit
+
+    responses = [
+        {
+            "default_branch": "main",
+        },
+        {
+            "sha": "abc123",
+        },
+    ]
+
+    with patch("verifier.github_checker.requests.get") as mock_get:
+        mock_get.side_effect = [
+            type(
+                "Response",
+                (),
+                {
+                    "raise_for_status": lambda self: None,
+                    "json": lambda self: responses[0],
+                },
+            )(),
+            type(
+                "Response",
+                (),
+                {
+                    "raise_for_status": lambda self: None,
+                    "json": lambda self: responses[1],
+                },
+            )(),
+        ]
+
+        sha = get_github_default_branch_commit(
+            "https://github.com/example/project"
+        )
+
+    assert sha == "abc123"
+    assert mock_get.call_count == 2
