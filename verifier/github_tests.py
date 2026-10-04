@@ -11,7 +11,7 @@ from verifier.models import Evidence, Policy, VerificationResult
 
 SUPPORTED_TEST_PROFILES = {
     "forge_test": {
-        "workflow_file": ".github/workflows/nexora-tests.yml",
+        "workflow_file": "nexora-tests.yml",
     },
 }
 
@@ -65,7 +65,7 @@ def check_github_tests(
 
     workflow_data = workflow_response.json()
 
-    if workflow_data.get("path") != profile["workflow_file"]:
+    if workflow_data.get("path") != f".github/workflows/{profile['workflow_file']}":
         return VerificationResult(
             repository_exists=repository_result.repository_exists,
             repository_public=repository_result.repository_public,
