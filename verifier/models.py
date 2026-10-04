@@ -10,6 +10,7 @@ class Policy:
     task_type: str
     repository_visibility: str
     required_files: List[str]
+    test_profile: str | None = None
 
 
 @dataclass(frozen=True)

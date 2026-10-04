@@ -73,3 +73,33 @@ def test_verify_task_rejects_non_public_policy():
         match="Only public GitHub repositories are supported",
     ):
         verify_task(policy, make_evidence())
+
+
+def test_verify_task_accepts_github_tests_task_type():
+    policy = Policy(
+        version="1.0",
+        task_type="github_tests",
+        repository_visibility="public",
+        required_files=[],
+        test_profile="forge_test",
+    )
+
+    with patch("verifier.engine.check_github_tests") as mock_checker:
+        expected = VerificationResult(
+            repository_exists=True,
+            repository_public=True,
+            required_files={},
+            passed=True,
+        )
+        mock_checker.return_value = expected
+
+        evidence = Evidence(
+            repository_url="https://github.com/example/project",
+            commit_sha="abc123",
+
+
+        )
+
+        result = verify_task(policy, evidence)
+
+    assert result == expected

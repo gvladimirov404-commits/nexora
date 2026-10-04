@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from verifier.github_checker import check_github_repository
+from verifier.github_tests import check_github_tests
 from verifier.models import Evidence, Policy, VerificationResult
 
 
-SUPPORTED_TASK_TYPES = {"github_repository"}
+SUPPORTED_TASK_TYPES = {"github_repository", "github_tests"}
 
 
 def verify_task(
@@ -19,6 +20,12 @@ def verify_task(
     if policy.repository_visibility != "public":
         raise ValueError(
             "Only public GitHub repositories are supported"
+        )
+
+    if policy.task_type == "github_tests":
+        return check_github_tests(
+            policy=policy,
+            evidence=evidence,
         )
 
     return check_github_repository(
