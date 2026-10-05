@@ -9,6 +9,7 @@ from verifier.models import Evidence, Policy, VerificationResult
 def make_policy():
     return Policy(
         version="1.0",
+        repository_url="https://github.com/example/project",
         task_type="github_repository",
         repository_visibility="public",
         required_files=["README.md", "LICENSE"],
@@ -51,6 +52,7 @@ def test_verify_task_delegates_to_github_checker(mock_checker):
 def test_verify_task_rejects_unsupported_task_type():
     policy = Policy(
         version="1.0",
+        repository_url="https://github.com/example/project",
         task_type="unknown_task",
         repository_visibility="public",
         required_files=[],
@@ -63,6 +65,7 @@ def test_verify_task_rejects_unsupported_task_type():
 def test_verify_task_rejects_non_public_policy():
     policy = Policy(
         version="1.0",
+        repository_url="https://github.com/example/project",
         task_type="github_repository",
         repository_visibility="private",
         required_files=[],
@@ -78,6 +81,7 @@ def test_verify_task_rejects_non_public_policy():
 def test_verify_task_accepts_github_tests_task_type():
     policy = Policy(
         version="1.0",
+        repository_url="https://github.com/example/project",
         task_type="github_tests",
         repository_visibility="public",
         required_files=[],

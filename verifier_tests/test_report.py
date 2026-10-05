@@ -16,6 +16,7 @@ from verifier.report import create_verification_report
 def make_policy() -> Policy:
     return Policy(
         version="v1",
+        repository_url="https://github.com/example/project",
         task_type="github_repository",
         repository_visibility="public",
         required_files=["README.md", "LICENSE"],

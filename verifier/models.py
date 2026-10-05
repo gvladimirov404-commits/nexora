@@ -7,6 +7,7 @@ from typing import Dict, List
 @dataclass(frozen=True)
 class Policy:
     version: str
+    repository_url: str
     task_type: str
     repository_visibility: str
     required_files: List[str]

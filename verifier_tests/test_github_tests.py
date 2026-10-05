@@ -7,6 +7,7 @@ from verifier.models import Evidence, Policy
 def make_policy():
     return Policy(
         version="1.0",
+        repository_url="https://github.com/example/project",
         task_type="github_tests",
         repository_visibility="public",
         required_files=["README.md", "LICENSE"],

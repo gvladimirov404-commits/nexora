@@ -22,6 +22,11 @@ def verify_task(
             "Only public GitHub repositories are supported"
         )
 
+    if policy.repository_url != evidence.repository_url:
+        raise ValueError(
+            "Policy repository does not match evidence repository"
+        )
+
     if policy.task_type == "github_tests":
         return check_github_tests(
             policy=policy,
