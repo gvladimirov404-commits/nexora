@@ -7,17 +7,15 @@ from verifier.report import create_verification_report
 
 
 def main() -> None:
+    repository_url = "https://github.com/octocat/Hello-World"
+
     policy = Policy(
         version="1.0",
+        repository_url=repository_url,
         task_type="github_repository",
         repository_visibility="public",
-        required_files=[
-            "README.md",
-            "LICENSE",
-        ],
+        required_files=[],
     )
-
-    repository_url = "https://github.com/octocat/Hello-World"
     commit_sha = get_github_default_branch_commit(repository_url)
 
     evidence = Evidence(
