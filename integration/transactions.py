@@ -40,19 +40,6 @@ def encode_submit_result(
     )._encode_transaction_data()
 
 
-def encode_submit_result(
-    web3: Web3,
-    contract_address: str,
-    task_id: int,
-    result_hash: str,
-) -> str:
-    contract = create_contract(web3, contract_address)
-
-    return contract.functions.submitResult(
-        task_id,
-        hex_to_bytes32(result_hash),
-    )._encode_transaction_data()
-
 
 def encode_verify_task(
     web3: Web3,
