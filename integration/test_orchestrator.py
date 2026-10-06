@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 from web3 import Web3
 
+from integration.contract import create_contract
 from integration.orchestrator import prepare_verification
 from verifier.models import Evidence, Policy, VerificationResult
 
@@ -54,6 +55,14 @@ def test_prepare_verification():
     assert prepared.report is report
     assert prepared.report.result.passed is True
     assert prepared.submit_calldata.startswith("0x")
+    submit_contract = create_contract(
+        Web3(),
+        "0x0000000000000000000000000000000000000001",
+    )
+    _, submit_args = submit_contract.decode_function_input(
+        prepared.submit_calldata
+    )
+    assert submit_args["resultHash"].hex() == prepared.report.evidence_hash
     assert prepared.verify_calldata.startswith("0x")
     mock_report.assert_called_once_with(
         policy=policy,
