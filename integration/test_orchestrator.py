@@ -53,6 +53,7 @@ def test_prepare_verification():
 
     assert prepared.report is report
     assert prepared.report.result.passed is True
+    assert prepared.submit_calldata.startswith("0x")
     assert prepared.verify_calldata.startswith("0x")
     mock_report.assert_called_once_with(
         policy=policy,
