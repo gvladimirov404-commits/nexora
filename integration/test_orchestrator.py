@@ -64,6 +64,16 @@ def test_prepare_verification():
     )
     assert submit_args["resultHash"].hex() == prepared.report.evidence_hash
     assert prepared.verify_calldata.startswith("0x")
+    verify_contract = create_contract(
+        Web3(),
+        "0x0000000000000000000000000000000000000001",
+    )
+    _, verify_args = verify_contract.decode_function_input(
+        prepared.verify_calldata
+    )
+    assert verify_args["taskId"] == 7
+    assert verify_args["passed"] is True
+    assert verify_args["evidenceHash"].hex() == prepared.report.evidence_hash
     mock_report.assert_called_once_with(
         policy=policy,
         evidence=evidence,
