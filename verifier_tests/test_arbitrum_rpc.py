@@ -57,6 +57,8 @@ def test_observer_decodes_transfer_log():
         ],
         "data": (100).to_bytes(32, "big"),
         "blockNumber": 150,
+        "transactionHash": bytes.fromhex("ab" * 32),
+        "logIndex": 7,
     }
 
     observations = observe_erc20_transfers(
@@ -72,6 +74,9 @@ def test_observer_decodes_transfer_log():
     assert observations[0].recipient == Web3.to_checksum_address(RECIPIENT)
     assert observations[0].amount == 100
     assert observations[0].timestamp == 1000
+    assert observations[0].transaction_hash == "0x" + "ab" * 32
+    assert observations[0].block_number == 150
+    assert observations[0].log_index == 7
 
 
 def test_observer_returns_empty_list_when_no_logs():

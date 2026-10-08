@@ -56,6 +56,13 @@ def observe_erc20_transfers(
                 recipient=recipient,
                 amount=amount,
                 timestamp=block["timestamp"],
+                transaction_hash=(
+                    "0x" + log["transactionHash"].hex()
+                    if isinstance(log["transactionHash"], bytes)
+                    else log["transactionHash"]
+                ),
+                block_number=log["blockNumber"],
+                log_index=log["logIndex"],
             )
         )
 

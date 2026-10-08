@@ -17,6 +17,9 @@ class ERC20TransferObservation:
     recipient: str
     amount: int
     timestamp: int | None
+    transaction_hash: str | None = None
+    block_number: int | None = None
+    log_index: int | None = None
 
 
 @dataclass(frozen=True)
