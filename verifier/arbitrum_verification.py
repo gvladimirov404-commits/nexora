@@ -9,6 +9,7 @@ from verifier.arbitrum_erc20 import (
     VerificationStatus,
     verify_erc20_observations,
 )
+from verifier.arbitrum_policy import ArbitrumERC20Policy
 from verifier.canonical import sha256_hex
 
 
@@ -28,18 +29,17 @@ class ArbitrumVerificationResult:
 
 
 def verify_arbitrum_erc20(
-    chain_id: int,
-    condition: ERC20TransferCondition,
+    policy: ArbitrumERC20Policy,
     observations: list[ERC20TransferObservation],
 ) -> ArbitrumVerificationResult:
     status = verify_erc20_observations(
-        condition=condition,
+        condition=policy.to_condition(),
         observations=observations,
     )
 
     evidence = ArbitrumVerificationEvidence(
-        chain_id=chain_id,
-        condition=condition,
+        chain_id=policy.chain_id,
+        condition=policy.to_condition(),
         observations=observations,
         status=status,
     )

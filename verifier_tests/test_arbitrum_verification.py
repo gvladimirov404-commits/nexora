@@ -3,6 +3,7 @@ from verifier.arbitrum_erc20 import (
     ERC20TransferObservation,
     VerificationStatus,
 )
+from verifier.arbitrum_policy import ArbitrumERC20Policy
 from verifier.arbitrum_verification import verify_arbitrum_erc20
 
 
@@ -21,6 +22,14 @@ def make_condition(minimum_amount: int = 600) -> ERC20TransferCondition:
     )
 
 
+def make_policy(minimum_amount: int = 600) -> ArbitrumERC20Policy:
+    return ArbitrumERC20Policy(
+        version="1",
+        chain_id=421614,
+        condition=make_condition(minimum_amount=minimum_amount),
+    )
+
+
 def make_observation(amount: int = 600) -> ERC20TransferObservation:
     return ERC20TransferObservation(
         token=TOKEN,
@@ -33,8 +42,7 @@ def make_observation(amount: int = 600) -> ERC20TransferObservation:
 
 def test_matching_transfer_returns_pass_and_hash():
     result = verify_arbitrum_erc20(
-        chain_id=421614,
-        condition=make_condition(),
+        policy=make_policy(),
         observations=[make_observation()],
     )
 
@@ -45,8 +53,7 @@ def test_matching_transfer_returns_pass_and_hash():
 
 def test_insufficient_amount_returns_fail():
     result = verify_arbitrum_erc20(
-        chain_id=421614,
-        condition=make_condition(minimum_amount=601),
+        policy=make_policy(minimum_amount=601),
         observations=[make_observation()],
     )
 
@@ -56,8 +63,7 @@ def test_insufficient_amount_returns_fail():
 
 def test_no_observations_returns_unknown():
     result = verify_arbitrum_erc20(
-        chain_id=421614,
-        condition=make_condition(),
+        policy=make_policy(),
         observations=[],
     )
 
@@ -70,13 +76,19 @@ def test_same_evidence_produces_same_hash():
     observations = [make_observation()]
 
     first = verify_arbitrum_erc20(
-        chain_id=421614,
-        condition=condition,
+        policy=ArbitrumERC20Policy(
+            version="1",
+            chain_id=421614,
+            condition=condition,
+        ),
         observations=observations,
     )
     second = verify_arbitrum_erc20(
-        chain_id=421614,
-        condition=condition,
+        policy=ArbitrumERC20Policy(
+            version="1",
+            chain_id=421614,
+            condition=condition,
+        ),
         observations=observations,
     )
 
@@ -85,13 +97,11 @@ def test_same_evidence_produces_same_hash():
 
 def test_changed_evidence_produces_different_hash():
     first = verify_arbitrum_erc20(
-        chain_id=421614,
-        condition=make_condition(),
+        policy=make_policy(),
         observations=[make_observation()],
     )
     second = verify_arbitrum_erc20(
-        chain_id=421614,
-        condition=make_condition(minimum_amount=601),
+        policy=make_policy(minimum_amount=601),
         observations=[make_observation()],
     )
 

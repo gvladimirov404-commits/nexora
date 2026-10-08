@@ -6,10 +6,10 @@ from web3 import Web3
 
 from integration.transactions import encode_submit_result, encode_verify_task
 from verifier.arbitrum_erc20 import (
-    ERC20TransferCondition,
     ERC20TransferObservation,
     VerificationStatus,
 )
+from verifier.arbitrum_policy import ArbitrumERC20Policy
 from verifier.arbitrum_verification import (
     ArbitrumVerificationResult,
     verify_arbitrum_erc20,
@@ -27,13 +27,11 @@ def prepare_arbitrum_verification(
     web3: Web3,
     contract_address: str,
     task_id: int,
-    chain_id: int,
-    condition: ERC20TransferCondition,
+    policy: ArbitrumERC20Policy,
     observations: list[ERC20TransferObservation],
 ) -> ArbitrumVerificationPreparation:
     result = verify_arbitrum_erc20(
-        chain_id=chain_id,
-        condition=condition,
+        policy=policy,
         observations=observations,
     )
 
