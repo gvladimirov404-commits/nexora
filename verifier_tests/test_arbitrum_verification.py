@@ -202,3 +202,15 @@ def test_rejects_mismatched_scope_chain_id():
         assert str(exc) == "Policy chain_id does not match verification scope chain_id"
     else:
         raise AssertionError("Expected ValueError")
+
+def test_later_valid_observation_overrides_earlier_failed_observation():
+    result = verify_arbitrum_erc20(
+        policy=make_policy(),
+        observations=[
+            make_observation(amount=599),
+            make_observation(amount=600),
+        ],
+        scope=make_scope(),
+    )
+
+    assert result.status is VerificationStatus.PASS
