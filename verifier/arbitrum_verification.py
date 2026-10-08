@@ -16,6 +16,7 @@ from verifier.canonical import sha256_hex
 @dataclass(frozen=True)
 class ArbitrumVerificationEvidence:
     chain_id: int
+    policy_version: str
     condition: ERC20TransferCondition
     observations: list[ERC20TransferObservation]
     status: VerificationStatus
@@ -44,6 +45,7 @@ def verify_arbitrum_erc20(
 
     evidence = ArbitrumVerificationEvidence(
         chain_id=policy.chain_id,
+        policy_version=policy.version,
         condition=policy.to_condition(),
         observations=observations,
         status=status,

@@ -125,3 +125,26 @@ def test_rejects_unsupported_policy_type():
         assert str(exc) == "Unsupported policy type: github_repository"
     else:
         raise AssertionError("Expected ValueError")
+
+
+def test_changed_policy_version_produces_different_hash():
+    observations = [make_observation()]
+
+    first = verify_arbitrum_erc20(
+        policy=ArbitrumERC20Policy(
+            version="1",
+            chain_id=421614,
+            condition=make_condition(),
+        ),
+        observations=observations,
+    )
+    second = verify_arbitrum_erc20(
+        policy=ArbitrumERC20Policy(
+            version="2",
+            chain_id=421614,
+            condition=make_condition(),
+        ),
+        observations=observations,
+    )
+
+    assert first.evidence_hash != second.evidence_hash
