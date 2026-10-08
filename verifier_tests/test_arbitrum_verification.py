@@ -186,3 +186,19 @@ def test_changed_policy_version_produces_different_hash():
     )
 
     assert first.evidence_hash != second.evidence_hash
+
+def test_rejects_mismatched_scope_chain_id():
+    try:
+        verify_arbitrum_erc20(
+            policy=make_policy(),
+            observations=[make_observation()],
+            scope=VerificationScope(
+                chain_id=1,
+                from_block=100,
+                to_block=200,
+            ),
+        )
+    except ValueError as exc:
+        assert str(exc) == "Policy chain_id does not match verification scope chain_id"
+    else:
+        raise AssertionError("Expected ValueError")

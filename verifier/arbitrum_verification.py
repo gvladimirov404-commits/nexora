@@ -41,6 +41,11 @@ def verify_arbitrum_erc20(
             f"Unsupported policy type: {policy.policy_type}"
         )
 
+    if scope.chain_id != policy.chain_id:
+        raise ValueError(
+            "Policy chain_id does not match verification scope chain_id"
+        )
+
     status = verify_erc20_observations(
         condition=policy.to_condition(),
         observations=observations,
