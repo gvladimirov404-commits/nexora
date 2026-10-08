@@ -32,3 +32,7 @@ def test_policy_converts_to_condition():
     )
 
     assert policy.to_condition() == condition
+
+
+def test_policy_has_fixed_type():
+    assert ArbitrumERC20Policy.policy_type == "arbitrum_erc20"
