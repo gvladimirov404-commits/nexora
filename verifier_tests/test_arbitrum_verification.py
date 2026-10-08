@@ -106,3 +106,22 @@ def test_changed_evidence_produces_different_hash():
     )
 
     assert first.evidence_hash != second.evidence_hash
+
+
+class WrongPolicyType:
+    policy_type = "github_repository"
+
+    def to_condition(self) -> ERC20TransferCondition:
+        return make_condition()
+
+
+def test_rejects_unsupported_policy_type():
+    try:
+        verify_arbitrum_erc20(
+            policy=WrongPolicyType(),
+            observations=[make_observation()],
+        )
+    except ValueError as exc:
+        assert str(exc) == "Unsupported policy type: github_repository"
+    else:
+        raise AssertionError("Expected ValueError")

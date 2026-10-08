@@ -32,6 +32,11 @@ def verify_arbitrum_erc20(
     policy: ArbitrumERC20Policy,
     observations: list[ERC20TransferObservation],
 ) -> ArbitrumVerificationResult:
+    if policy.policy_type != "arbitrum_erc20":
+        raise ValueError(
+            f"Unsupported policy type: {policy.policy_type}"
+        )
+
     status = verify_erc20_observations(
         condition=policy.to_condition(),
         observations=observations,
