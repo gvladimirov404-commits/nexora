@@ -20,6 +20,7 @@ class FakeEth:
     def __init__(self, logs, block_timestamp=1000):
         self.logs = logs
         self.block_timestamp = block_timestamp
+        self.chain_id = 421614
 
     def get_logs(self, params):
         assert params["address"] == Web3.to_checksum_address(TOKEN)
@@ -61,13 +62,17 @@ def test_observer_decodes_transfer_log():
         "logIndex": 7,
     }
 
-    observations = observe_erc20_transfers(
+    result = observe_erc20_transfers(
         web3=FakeWeb3([log]),
         condition=make_condition(),
         from_block=100,
         to_block=200,
     )
 
+    assert result.scope.chain_id == 421614
+    assert result.scope.from_block == 100
+    assert result.scope.to_block == 200
+    observations = result.observations
     assert len(observations) == 1
     assert observations[0].token == Web3.to_checksum_address(TOKEN)
     assert observations[0].sender == Web3.to_checksum_address(SENDER)
@@ -80,14 +85,17 @@ def test_observer_decodes_transfer_log():
 
 
 def test_observer_returns_empty_list_when_no_logs():
-    observations = observe_erc20_transfers(
+    result = observe_erc20_transfers(
         web3=FakeWeb3([]),
         condition=make_condition(),
         from_block=100,
         to_block=200,
     )
 
-    assert observations == []
+    assert result.observations == []
+    assert result.scope.chain_id == 421614
+    assert result.scope.from_block == 100
+    assert result.scope.to_block == 200
 
 
 def test_observer_rejects_reversed_block_range():

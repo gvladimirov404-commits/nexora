@@ -2,6 +2,7 @@ from verifier.arbitrum_erc20 import (
     ERC20TransferCondition,
     ERC20TransferObservation,
     VerificationStatus,
+    VerificationScope,
 )
 from verifier.arbitrum_policy import ArbitrumERC20Policy
 from verifier.arbitrum_verification import verify_arbitrum_erc20
@@ -40,10 +41,19 @@ def make_observation(amount: int = 600) -> ERC20TransferObservation:
     )
 
 
+def make_scope() -> VerificationScope:
+    return VerificationScope(
+        chain_id=421614,
+        from_block=100,
+        to_block=200,
+    )
+
+
 def test_matching_transfer_returns_pass_and_hash():
     result = verify_arbitrum_erc20(
         policy=make_policy(),
         observations=[make_observation()],
+        scope=make_scope(),
     )
 
     assert result.status is VerificationStatus.PASS
@@ -55,6 +65,7 @@ def test_insufficient_amount_returns_fail():
     result = verify_arbitrum_erc20(
         policy=make_policy(minimum_amount=601),
         observations=[make_observation()],
+        scope=make_scope(),
     )
 
     assert result.status is VerificationStatus.FAIL
@@ -65,6 +76,7 @@ def test_no_observations_returns_unknown():
     result = verify_arbitrum_erc20(
         policy=make_policy(),
         observations=[],
+        scope=make_scope(),
     )
 
     assert result.status is VerificationStatus.UNKNOWN
@@ -82,6 +94,7 @@ def test_same_evidence_produces_same_hash():
             condition=condition,
         ),
         observations=observations,
+        scope=make_scope(),
     )
     second = verify_arbitrum_erc20(
         policy=ArbitrumERC20Policy(
@@ -90,6 +103,7 @@ def test_same_evidence_produces_same_hash():
             condition=condition,
         ),
         observations=observations,
+        scope=make_scope(),
     )
 
     assert first.evidence_hash == second.evidence_hash
@@ -99,10 +113,31 @@ def test_changed_evidence_produces_different_hash():
     first = verify_arbitrum_erc20(
         policy=make_policy(),
         observations=[make_observation()],
+        scope=make_scope(),
     )
     second = verify_arbitrum_erc20(
         policy=make_policy(minimum_amount=601),
         observations=[make_observation()],
+        scope=make_scope(),
+    )
+
+    assert first.evidence_hash != second.evidence_hash
+
+
+def test_changed_scope_produces_different_hash():
+    first = verify_arbitrum_erc20(
+        policy=make_policy(),
+        observations=[make_observation()],
+        scope=make_scope(),
+    )
+    second = verify_arbitrum_erc20(
+        policy=make_policy(),
+        observations=[make_observation()],
+        scope=VerificationScope(
+            chain_id=421614,
+            from_block=101,
+            to_block=200,
+        ),
     )
 
     assert first.evidence_hash != second.evidence_hash
@@ -120,6 +155,7 @@ def test_rejects_unsupported_policy_type():
         verify_arbitrum_erc20(
             policy=WrongPolicyType(),
             observations=[make_observation()],
+            scope=make_scope(),
         )
     except ValueError as exc:
         assert str(exc) == "Unsupported policy type: github_repository"
@@ -137,6 +173,7 @@ def test_changed_policy_version_produces_different_hash():
             condition=make_condition(),
         ),
         observations=observations,
+        scope=make_scope(),
     )
     second = verify_arbitrum_erc20(
         policy=ArbitrumERC20Policy(
@@ -145,6 +182,7 @@ def test_changed_policy_version_produces_different_hash():
             condition=make_condition(),
         ),
         observations=observations,
+        scope=make_scope(),
     )
 
     assert first.evidence_hash != second.evidence_hash

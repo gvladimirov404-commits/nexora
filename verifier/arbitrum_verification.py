@@ -7,6 +7,7 @@ from verifier.arbitrum_erc20 import (
     ERC20TransferCondition,
     ERC20TransferObservation,
     VerificationStatus,
+    VerificationScope,
     verify_erc20_observations,
 )
 from verifier.arbitrum_policy import ArbitrumERC20Policy
@@ -17,6 +18,7 @@ from verifier.canonical import sha256_hex
 class ArbitrumVerificationEvidence:
     chain_id: int
     policy_version: str
+    scope: VerificationScope
     condition: ERC20TransferCondition
     observations: list[ERC20TransferObservation]
     status: VerificationStatus
@@ -32,6 +34,7 @@ class ArbitrumVerificationResult:
 def verify_arbitrum_erc20(
     policy: ArbitrumERC20Policy,
     observations: list[ERC20TransferObservation],
+    scope: VerificationScope,
 ) -> ArbitrumVerificationResult:
     if policy.policy_type != "arbitrum_erc20":
         raise ValueError(
@@ -46,6 +49,7 @@ def verify_arbitrum_erc20(
     evidence = ArbitrumVerificationEvidence(
         chain_id=policy.chain_id,
         policy_version=policy.version,
+        scope=scope,
         condition=policy.to_condition(),
         observations=observations,
         status=status,

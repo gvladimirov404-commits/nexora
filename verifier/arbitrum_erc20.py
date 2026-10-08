@@ -11,6 +11,13 @@ class VerificationStatus(str, Enum):
 
 
 @dataclass(frozen=True)
+class VerificationScope:
+    chain_id: int
+    from_block: int
+    to_block: int
+
+
+@dataclass(frozen=True)
 class ERC20TransferObservation:
     token: str
     sender: str

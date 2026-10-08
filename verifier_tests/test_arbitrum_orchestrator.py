@@ -5,6 +5,7 @@ from integration.contract import create_contract
 from verifier.arbitrum_erc20 import (
     ERC20TransferCondition,
     ERC20TransferObservation,
+    VerificationScope,
     VerificationStatus,
 )
 from verifier.arbitrum_policy import ArbitrumERC20Policy
@@ -40,6 +41,14 @@ def make_observation(amount: int = 600):
     )
 
 
+def make_scope() -> VerificationScope:
+    return VerificationScope(
+        chain_id=421614,
+        from_block=100,
+        to_block=200,
+    )
+
+
 def test_pass_prepares_submit_and_verify():
     web3 = Web3()
     result = prepare_arbitrum_verification(
@@ -48,6 +57,7 @@ def test_pass_prepares_submit_and_verify():
         task_id=7,
         policy=make_policy(),
         observations=[make_observation()],
+        scope=make_scope(),
     )
 
     assert result.result.status is VerificationStatus.PASS
@@ -77,6 +87,7 @@ def test_fail_prepares_submit_and_failed_verify():
         task_id=8,
         policy=make_policy(minimum_amount=601),
         observations=[make_observation()],
+        scope=make_scope(),
     )
 
     assert result.result.status is VerificationStatus.FAIL
@@ -102,6 +113,7 @@ def test_unknown_does_not_prepare_verify_calldata():
         task_id=9,
         policy=make_policy(),
         observations=[],
+        scope=make_scope(),
     )
 
     assert result.result.status is VerificationStatus.UNKNOWN

@@ -1,11 +1,19 @@
 from __future__ import annotations
+from dataclasses import dataclass
 
 from web3 import Web3
 
 from verifier.arbitrum_erc20 import (
     ERC20TransferCondition,
     ERC20TransferObservation,
+    VerificationScope,
 )
+
+
+@dataclass(frozen=True)
+class ArbitrumObservationResult:
+    scope: VerificationScope
+    observations: list[ERC20TransferObservation]
 
 
 TRANSFER_EVENT_TOPIC = "0x" + Web3.keccak(
@@ -23,7 +31,7 @@ def observe_erc20_transfers(
     condition: ERC20TransferCondition,
     from_block: int,
     to_block: int,
-) -> list[ERC20TransferObservation]:
+) -> ArbitrumObservationResult:
     if from_block > to_block:
         raise ValueError("from_block must not be greater than to_block")
 
@@ -66,4 +74,11 @@ def observe_erc20_transfers(
             )
         )
 
-    return observations
+    return ArbitrumObservationResult(
+        scope=VerificationScope(
+            chain_id=web3.eth.chain_id,
+            from_block=from_block,
+            to_block=to_block,
+        ),
+        observations=observations,
+    )
