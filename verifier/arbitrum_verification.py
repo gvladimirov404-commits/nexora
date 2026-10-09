@@ -46,6 +46,11 @@ def verify_arbitrum_erc20(
             "Policy chain_id does not match verification scope chain_id"
         )
 
+    if scope.from_block > scope.to_block:
+        raise ValueError(
+            "from_block must not be greater than to_block"
+        )
+
     for observation in observations:
         if observation.block_number is not None and not (
             scope.from_block <= observation.block_number <= scope.to_block

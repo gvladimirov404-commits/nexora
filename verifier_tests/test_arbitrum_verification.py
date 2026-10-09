@@ -236,3 +236,20 @@ def test_rejects_observation_outside_scope():
         assert str(exc) == "Observation block_number outside verification scope"
     else:
         raise AssertionError("Expected ValueError")
+
+
+def test_rejects_reversed_verification_scope():
+    try:
+        verify_arbitrum_erc20(
+            policy=make_policy(),
+            observations=[],
+            scope=VerificationScope(
+                chain_id=421614,
+                from_block=200,
+                to_block=100,
+            ),
+        )
+    except ValueError as exc:
+        assert str(exc) == "from_block must not be greater than to_block"
+    else:
+        raise AssertionError("Expected ValueError")
