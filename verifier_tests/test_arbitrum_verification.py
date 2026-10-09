@@ -214,3 +214,25 @@ def test_later_valid_observation_overrides_earlier_failed_observation():
     )
 
     assert result.status is VerificationStatus.PASS
+
+
+def test_rejects_observation_outside_scope():
+    observation = ERC20TransferObservation(
+        token=TOKEN,
+        sender=SENDER,
+        recipient=RECIPIENT,
+        amount=600,
+        timestamp=1000,
+        block_number=201,
+    )
+
+    try:
+        verify_arbitrum_erc20(
+            policy=make_policy(),
+            observations=[observation],
+            scope=make_scope(),
+        )
+    except ValueError as exc:
+        assert str(exc) == "Observation block_number outside verification scope"
+    else:
+        raise AssertionError("Expected ValueError")

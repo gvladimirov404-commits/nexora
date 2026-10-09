@@ -46,6 +46,14 @@ def verify_arbitrum_erc20(
             "Policy chain_id does not match verification scope chain_id"
         )
 
+    for observation in observations:
+        if observation.block_number is not None and not (
+            scope.from_block <= observation.block_number <= scope.to_block
+        ):
+            raise ValueError(
+                "Observation block_number outside verification scope"
+            )
+
     status = verify_erc20_observations(
         condition=policy.to_condition(),
         observations=observations,
