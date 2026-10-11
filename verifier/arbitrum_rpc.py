@@ -47,6 +47,8 @@ def observe_erc20_transfers(
     observations: list[ERC20TransferObservation] = []
 
     for log in logs:
+        if log.get("removed", False):
+            raise ValueError("RPC returned a removed log")
         if len(log["topics"]) < 3:
             continue
 
@@ -71,6 +73,11 @@ def observe_erc20_transfers(
                 ),
                 block_number=log["blockNumber"],
                 log_index=log["logIndex"],
+                block_hash=(
+                    "0x" + log["blockHash"].hex()
+                    if isinstance(log.get("blockHash"), bytes)
+                    else log.get("blockHash")
+                ),
             )
         )
 

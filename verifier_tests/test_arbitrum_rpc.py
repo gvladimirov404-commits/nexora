@@ -58,6 +58,7 @@ def test_observer_decodes_transfer_log():
         ],
         "data": (100).to_bytes(32, "big"),
         "blockNumber": 150,
+        "blockHash": bytes.fromhex("cd" * 32),
         "transactionHash": bytes.fromhex("ab" * 32),
         "logIndex": 7,
     }
@@ -81,6 +82,7 @@ def test_observer_decodes_transfer_log():
     assert observations[0].timestamp == 1000
     assert observations[0].transaction_hash == "0x" + "ab" * 32
     assert observations[0].block_number == 150
+    assert observations[0].block_hash == "0x" + "cd" * 32
     assert observations[0].log_index == 7
 
 
@@ -110,3 +112,30 @@ def test_observer_rejects_reversed_block_range():
         assert str(exc) == "from_block must not be greater than to_block"
     else:
         raise AssertionError("Expected ValueError")
+
+def test_observer_rejects_removed_log():
+    log = {
+        "topics": [
+            bytes.fromhex(TRANSFER_EVENT_TOPIC[2:]),
+            _address_topic(SENDER),
+            _address_topic(RECIPIENT),
+        ],
+        "data": (100).to_bytes(32, "big"),
+        "blockNumber": 150,
+        "blockHash": bytes.fromhex("cd" * 32),
+        "transactionHash": bytes.fromhex("ab" * 32),
+        "logIndex": 7,
+        "removed": True,
+    }
+
+    try:
+        observe_erc20_transfers(
+            web3=FakeWeb3([log]),
+            condition=make_condition(),
+            from_block=100,
+            to_block=200,
+        )
+    except ValueError as exc:
+        assert str(exc) == "RPC returned a removed log"
+    else:
+        raise AssertionError("Expected removed log to be rejected")

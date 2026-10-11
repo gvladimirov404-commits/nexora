@@ -119,3 +119,50 @@ def test_unknown_does_not_prepare_verify_calldata():
     assert result.result.status is VerificationStatus.UNKNOWN
     assert result.submit_calldata.startswith("0x")
     assert result.verify_calldata is None
+
+
+def test_rpc_entrypoint_passes_observations_to_orchestrator(monkeypatch):
+    import integration.arbitrum_orchestrator as orchestrator
+    from verifier.arbitrum_rpc import ArbitrumObservationResult
+
+    web3 = Web3()
+    policy = make_policy()
+    scope = make_scope()
+    observations = [make_observation()]
+
+    calls = {}
+
+    def fake_observe_erc20_transfers(
+        web3, condition, from_block, to_block
+    ):
+        calls["web3"] = web3
+        calls["condition"] = condition
+        calls["from_block"] = from_block
+        calls["to_block"] = to_block
+        return ArbitrumObservationResult(
+            scope=scope,
+            observations=observations,
+        )
+
+    monkeypatch.setattr(
+        orchestrator,
+        "observe_erc20_transfers",
+        fake_observe_erc20_transfers,
+        raising=False,
+    )
+
+    result = orchestrator.prepare_arbitrum_verification_from_rpc(
+        web3=web3,
+        contract_address="0x0000000000000000000000000000000000000001",
+        task_id=10,
+        policy=policy,
+        from_block=100,
+        to_block=200,
+    )
+
+    assert calls["web3"] is web3
+    assert calls["condition"] == policy.to_condition()
+    assert calls["from_block"] == 100
+    assert calls["to_block"] == 200
+    assert result.result.status is VerificationStatus.PASS
+    assert result.verify_calldata is not None
