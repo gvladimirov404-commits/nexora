@@ -5,3 +5,9 @@ __pycache__/
 *.pyc
 
 .deployment_private_key
+# Local backups and agent settings
+.local-backups/
+.codebuddy/settings.local.json
+*.before-*
+# Accidental local artifacts
+/PY

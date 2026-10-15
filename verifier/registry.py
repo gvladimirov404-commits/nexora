@@ -30,8 +30,14 @@ class VerifierRegistry:
 
         if task_type in self._verifiers:
             raise ValueError(f"Verifier already registered: {task_type}")
+        if not callable(verifier):
+            raise TypeError("Verifier must be callable")
 
         self._verifiers[task_type] = verifier
+
+    def supports(self, task_type: str) -> bool:
+        """Return whether a verifier is registered for this task type."""
+        return task_type in self._verifiers
 
     def verify(
         self,

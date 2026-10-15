@@ -155,3 +155,9 @@ def test_external_verifier_rejects_invalid_evidence():
 
     assert result.status == "FAIL"
     assert result.details["checker"] == "external_module"
+
+def test_registry_rejects_non_callable_verifier():
+    registry = VerifierRegistry()
+
+    with pytest.raises(TypeError, match="Verifier must be callable"):
+        registry.register("generic_task", None)
