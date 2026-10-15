@@ -12,6 +12,7 @@ from verifier.report import create_verification_report
 def main() -> None:
     policy = Policy(
         version="1.0",
+        repository_url="https://github.com/public-apis/public-apis",
         task_type="github_repository",
         repository_visibility="public",
         required_files=[

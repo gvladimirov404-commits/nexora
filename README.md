@@ -32,7 +32,7 @@ Submitted
 Passed ─────→ Released
    │
    └────────→ Failed ─────→ Refunded
-
+```
 
 ## Architecture
 
@@ -45,6 +45,22 @@ The policy defines what must be achieved. Evidence describes what was produced. 
 The MVP verifies GitHub repository delivery tasks.
 
 A policy defines the required conditions. Evidence identifies the repository and commit. An off-chain verifier checks the evidence and produces a PASS or FAIL result.
+
+### Run the GitHub verification demo
+
+From the repository root, run:
+
+```bash
+python demo/nexora_demo.py
+```
+
+The demo checks the public `public-apis/public-apis` repository at its current default-branch commit. It reports repository visibility, the presence of `README.md` and `LICENSE`, the PASS/FAIL result, and the policy, evidence, and verification hashes.
+
+This is a live GitHub API check, so it requires an internet connection and can be affected by API limits or network failures.
+
+### Verification scope and limitations
+
+A PASS means the configured repository checks succeeded. It does not prove that the code is secure, that its tests pass, that the delivered work meets every client requirement, or that a payment transaction has completed. Those conditions require additional checks appropriate to the task.
 
 The smart contract stores hashes of the policy, result, and verification evidence and controls payment settlement.
 
