@@ -55,12 +55,20 @@ def check_github_tests(
         headers=headers,
     )
 
-    if workflow_response.status_code != 200:
+    if workflow_response.status_code == 404:
         return VerificationResult(
             repository_exists=repository_result.repository_exists,
             repository_public=repository_result.repository_public,
             required_files=repository_result.required_files,
             passed=False,
+        )
+
+    workflow_response.raise_for_status()
+
+    if workflow_response.status_code != 200:
+        raise requests.HTTPError(
+            f"Unexpected workflow API status: "
+            f"{workflow_response.status_code}"
         )
 
     workflow_data = workflow_response.json()
@@ -100,12 +108,20 @@ def check_github_tests(
         headers=headers,
     )
 
-    if runs_response.status_code != 200:
+    if runs_response.status_code == 404:
         return VerificationResult(
             repository_exists=repository_result.repository_exists,
             repository_public=repository_result.repository_public,
             required_files=repository_result.required_files,
             passed=False,
+        )
+
+    runs_response.raise_for_status()
+
+    if runs_response.status_code != 200:
+        raise requests.HTTPError(
+            f"Unexpected workflow runs API status: "
+            f"{runs_response.status_code}"
         )
 
     runs_data = runs_response.json()

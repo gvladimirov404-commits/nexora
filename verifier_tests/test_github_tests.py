@@ -170,3 +170,38 @@ def test_github_tests_fails_when_run_is_pull_request(mock_get):
     result = check_github_tests(make_policy(), make_evidence())
 
     assert result.passed is False
+
+
+@patch("verifier.github_tests.requests.get")
+def test_github_tests_raises_on_workflow_api_error(mock_get):
+    import pytest
+    import requests
+
+    mock_get.side_effect = [
+        *repository_responses(),
+        Mock(status_code=429),
+    ]
+
+    with pytest.raises(requests.HTTPError):
+        check_github_tests(make_policy(), make_evidence())
+
+
+@patch("verifier.github_tests.requests.get")
+def test_github_tests_raises_on_workflow_runs_api_error(mock_get):
+    import pytest
+    import requests
+
+    mock_get.side_effect = [
+        *repository_responses(),
+        Mock(
+            status_code=200,
+            json=lambda: {
+                "id": 123,
+                "path": ".github/workflows/nexora-tests.yml",
+            },
+        ),
+        Mock(status_code=429),
+    ]
+
+    with pytest.raises(requests.HTTPError):
+        check_github_tests(make_policy(), make_evidence())
