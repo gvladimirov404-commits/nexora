@@ -119,9 +119,7 @@ def check_github_repository(
         headers={"Accept": "application/vnd.github+json"},
     )
 
-    commit_exists = commit_response.status_code == 200
-
-    if not commit_exists:
+    if commit_response.status_code == 404:
         return VerificationResult(
             repository_exists=repository_exists,
             repository_public=repository_public,
@@ -131,6 +129,16 @@ def check_github_repository(
             },
             passed=False,
         )
+
+    commit_response.raise_for_status()
+    if commit_response.status_code != 200:
+        raise requests.HTTPError(
+            f"Unexpected GitHub commit API status: "
+            f"{commit_response.status_code}",
+            response=commit_response,
+        )
+
+    commit_exists = True
 
     required_files: dict[str, bool] = {}
 
@@ -147,7 +155,17 @@ def check_github_repository(
             headers={"Accept": "application/vnd.github+json"},
         )
 
-        required_files[filename] = file_response.status_code == 200
+        if file_response.status_code == 404:
+            required_files[filename] = False
+        else:
+            file_response.raise_for_status()
+            if file_response.status_code != 200:
+                raise requests.HTTPError(
+                    f"Unexpected GitHub file API status: "
+                    f"{file_response.status_code}",
+                    response=file_response,
+                )
+            required_files[filename] = True
 
     passed = (
         repository_exists

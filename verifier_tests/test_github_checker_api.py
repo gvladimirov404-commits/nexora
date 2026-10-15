@@ -1,5 +1,8 @@
 from unittest.mock import Mock, patch
 
+import pytest
+import requests
+
 from verifier.github_checker import check_github_repository
 from verifier.models import Evidence, Policy
 
@@ -181,3 +184,37 @@ def test_get_github_default_branch_commit():
 
     assert sha == "abc123"
     assert mock_get.call_count == 2
+
+@pytest.mark.parametrize("status_code", [403, 429])
+@pytest.mark.parametrize("stage", ["commit", "file"])
+def test_github_api_errors_are_not_reported_as_missing_resources(
+    status_code, stage
+):
+    repository_response = Mock()
+    repository_response.status_code = 200
+    repository_response.json.return_value = {"private": False}
+
+    commit_response = Mock()
+    commit_response.status_code = 200
+
+    error_response = Mock()
+    error_response.status_code = status_code
+    error_response.raise_for_status.side_effect = requests.HTTPError(
+        f"HTTP {status_code}", response=error_response
+    )
+
+    if stage == "commit":
+        responses = [repository_response, error_response]
+    else:
+        responses = [
+            repository_response,
+            commit_response,
+            error_response,
+        ]
+
+    with patch(
+        "verifier.github_checker.requests.get",
+        side_effect=responses,
+    ):
+        with pytest.raises(requests.HTTPError):
+            check_github_repository(make_policy(), make_evidence())
