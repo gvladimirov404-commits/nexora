@@ -283,3 +283,43 @@ def test_unregistered_task_is_rejected_before_tool_execution():
         run_task(task, plan=plan, tool_registry=tools)
 
     assert called == []
+
+
+def test_agent_can_verify_evidence_built_from_tool_results():
+    task = make_task("# Summary\nIncomplete")
+    registry = AgentToolRegistry()
+    tool_report = "# Summary\nOverview\n# Conclusion\nComplete."
+
+    registry.register(
+        "collect_report",
+        lambda received_task: tool_report,
+    )
+
+    result = run_task(
+        task,
+        plan=AgentPlan("report", ("collect_report",)),
+        tool_registry=registry,
+        evidence_builder=lambda received_task, results: ReportEvidence(
+            content=results[0]
+        ),
+    )
+
+    assert result.tool_results == (tool_report,)
+    assert result.passed is True
+    assert result.verification.details["required_sections"] == {
+        "Summary": True,
+        "Conclusion": True,
+    }
+
+def test_agent_rejects_non_callable_evidence_builder():
+    with pytest.raises(TypeError, match="evidence_builder must be callable"):
+        run_task(make_task(), evidence_builder="not callable")
+
+
+def test_agent_rejects_evidence_builder_without_planned_tools():
+    with pytest.raises(ValueError, match="at least one planned tool"):
+        run_task(
+            make_task(),
+            plan=AgentPlan("report"),
+            evidence_builder=lambda task, results: task.evidence,
+        )

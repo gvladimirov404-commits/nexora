@@ -79,6 +79,7 @@ def run_task(
     plan: AgentPlan | None = None,
     tool_registry: AgentToolRegistry | None = None,
     planner: AgentPlanner | None = None,
+    evidence_builder: Callable[[AgentTask, tuple[Any, ...]], Any] | None = None,
 ) -> AgentResult:
     """Plan optionally, execute only registered tools, then verify the task."""
     if not task.task_type.strip():
@@ -105,13 +106,23 @@ def run_task(
     if plan.task_type != task.task_type:
         raise ValueError("Plan task type does not match task type")
 
+    if evidence_builder is not None:
+        if not callable(evidence_builder):
+            raise TypeError("evidence_builder must be callable")
+        if not plan.tool_names:
+            raise ValueError("evidence_builder requires at least one planned tool")
+
     tool_results: tuple[Any, ...] = ()
     if plan.tool_names:
         if tool_registry is None:
             raise ValueError("A tool registry is required for this plan")
         tool_results = tool_registry.execute(plan, task)
 
-    result = verify_registered_task(task.policy, task.evidence)
+    evidence = task.evidence
+    if evidence_builder is not None:
+        evidence = evidence_builder(task, tool_results)
+
+    result = verify_registered_task(task.policy, evidence)
     return AgentResult(
         task_type=task.task_type,
         verification=result,
