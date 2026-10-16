@@ -71,7 +71,7 @@ def test_pass_prepares_submit_and_verify():
 
     _, submit_args = contract.decode_function_input(result.submit_calldata)
     assert submit_args["taskId"] == 7
-    assert submit_args["resultHash"].hex() == result.result.evidence_hash
+    assert submit_args["resultHash"].hex() == result.result.result_hash
 
     _, verify_args = contract.decode_function_input(result.verify_calldata)
     assert verify_args["taskId"] == 7

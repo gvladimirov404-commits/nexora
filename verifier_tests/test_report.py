@@ -53,8 +53,11 @@ def test_create_verification_report(mock_verify_task):
     )
 
     assert report.policy_hash == policy_hash(policy)
-    assert report.evidence_hash == evidence_hash(evidence)
-    assert report.verification_hash == verification_hash(result)
+    assert report.result_hash == evidence_hash(evidence)
+    assert len(report.evidence_hash) == 64
+    assert report.evidence_hash != report.result_hash
+    assert len(report.verification_hash) == 64
+    assert report.verification_hash != verification_hash(result)
     assert report.result == result
 
     mock_verify_task.assert_called_once_with(

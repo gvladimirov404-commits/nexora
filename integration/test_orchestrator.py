@@ -38,7 +38,8 @@ def test_prepare_verification():
 
         report = VerificationReport(
             policy_hash=policy_hash(policy),
-            evidence_hash=evidence_hash(evidence),
+            result_hash=evidence_hash(evidence),
+            evidence_hash="ab" * 32,
             verification_hash=verification_hash(result),
             result=result,
         )
@@ -62,7 +63,7 @@ def test_prepare_verification():
     _, submit_args = submit_contract.decode_function_input(
         prepared.submit_calldata
     )
-    assert submit_args["resultHash"].hex() == prepared.report.evidence_hash
+    assert submit_args["resultHash"].hex() == prepared.report.result_hash
     assert prepared.verify_calldata.startswith("0x")
     verify_contract = create_contract(
         Web3(),

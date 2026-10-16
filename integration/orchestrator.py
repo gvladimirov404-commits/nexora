@@ -32,7 +32,7 @@ def prepare_verification(
         web3=web3,
         contract_address=contract_address,
         task_id=task_id,
-        result_hash=report.evidence_hash,
+        result_hash=report.result_hash,
     )
 
     verify_calldata = encode_verify_task(

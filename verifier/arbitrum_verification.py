@@ -28,7 +28,9 @@ class ArbitrumVerificationEvidence:
 class ArbitrumVerificationResult:
     status: VerificationStatus
     evidence: ArbitrumVerificationEvidence
+    result_hash: str
     evidence_hash: str
+    verification_hash: str
 
 
 def verify_arbitrum_erc20(
@@ -73,8 +75,29 @@ def verify_arbitrum_erc20(
         status=status,
     )
 
+    policy_digest = sha256_hex(asdict(policy))
+    result_digest = sha256_hex({
+        "schema": "nexora.arbitrum.result.v1",
+        "observations": [asdict(item) for item in observations],
+    })
+    audit_digest = sha256_hex({
+        "schema": "nexora.arbitrum.audit.v1",
+        "policy_hash": policy_digest,
+        "result_hash": result_digest,
+        "evidence": asdict(evidence),
+    })
+    decision_digest = sha256_hex({
+        "schema": "nexora.decision.v1",
+        "policy_hash": policy_digest,
+        "result_hash": result_digest,
+        "evidence_hash": audit_digest,
+        "status": status.value,
+    })
+
     return ArbitrumVerificationResult(
         status=status,
         evidence=evidence,
-        evidence_hash=sha256_hex(asdict(evidence)),
+        result_hash=result_digest,
+        evidence_hash=audit_digest,
+        verification_hash=decision_digest,
     )

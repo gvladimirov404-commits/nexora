@@ -43,7 +43,7 @@ def prepare_arbitrum_verification(
         web3=web3,
         contract_address=contract_address,
         task_id=task_id,
-        result_hash=result.evidence_hash,
+        result_hash=result.result_hash,
     )
 
     verify_calldata: str | None = None
