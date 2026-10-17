@@ -55,3 +55,39 @@ def encode_verify_task(
         passed,
         hex_to_bytes32(evidence_hash),
     )._encode_transaction_data()
+
+
+def encode_fund_task(
+    web3: Web3,
+    contract_address: str,
+    task_id: int,
+) -> str:
+    contract = create_contract(web3, contract_address)
+    return contract.functions.fundTask(task_id)._encode_transaction_data()
+
+
+def encode_release_payment(
+    web3: Web3,
+    contract_address: str,
+    task_id: int,
+) -> str:
+    contract = create_contract(web3, contract_address)
+    return contract.functions.releasePayment(task_id)._encode_transaction_data()
+
+
+def encode_refund_payment(
+    web3: Web3,
+    contract_address: str,
+    task_id: int,
+) -> str:
+    contract = create_contract(web3, contract_address)
+    return contract.functions.refundPayment(task_id)._encode_transaction_data()
+
+
+def encode_refund_after_deadline(
+    web3: Web3,
+    contract_address: str,
+    task_id: int,
+) -> str:
+    contract = create_contract(web3, contract_address)
+    return contract.functions.refundAfterDeadline(task_id)._encode_transaction_data()
