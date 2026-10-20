@@ -71,11 +71,30 @@ def get_github_default_branch_commit(
     return branch_response.json()["sha"]
 
 
+def _validate_required_files(required_files: list[str]) -> None:
+    if not isinstance(required_files, list):
+        raise ValueError("required_files must be a list of file paths")
+
+    if not required_files:
+        raise ValueError("Policy must list at least one required file")
+
+    for name in required_files:
+        if (
+            not isinstance(name, str)
+            or not name.strip()
+            or any(char in name for char in "?#%\\")
+            or any(part in {"", ".", ".."} for part in name.split("/"))
+        ):
+            raise ValueError(f"Invalid required file path: {name!r}")
+
+
 def check_github_repository(
     policy: Policy,
     evidence: Evidence,
     timeout: int = 10,
 ) -> VerificationResult:
+    _validate_required_files(policy.required_files)
+
     repository = parse_github_repository(evidence.repository_url)
 
     api_url = (

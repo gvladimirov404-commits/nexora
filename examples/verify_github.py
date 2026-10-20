@@ -7,14 +7,21 @@ from verifier.report import create_verification_report
 
 
 def main() -> None:
-    repository_url = "https://github.com/octocat/Hello-World"
+    if len(sys.argv) < 3:
+        sys.exit(
+            "Usage: python examples/verify_github.py "
+            "<repository_url> <required_file> [<required_file> ...]"
+        )
+
+    repository_url = sys.argv[1]
+    required_files = sys.argv[2:]
 
     policy = Policy(
         version="1.0",
         repository_url=repository_url,
         task_type="github_repository",
         repository_visibility="public",
-        required_files=[],
+        required_files=required_files,
     )
     commit_sha = get_github_default_branch_commit(repository_url)
 

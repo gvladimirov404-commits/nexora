@@ -82,7 +82,7 @@ def test_prepare_verification():
 
 
 def test_prepared_verification_calldata_runs_through_sender(monkeypatch):
-    from unittest.mock import MagicMock
+    from unittest.mock import MagicMock, Mock
 
     import integration.transaction_sender as sender_module
     from integration.transaction_sender import TransactionResult
@@ -100,17 +100,35 @@ def test_prepared_verification_calldata_runs_through_sender(monkeypatch):
         repository_url=repository_url,
         task_type="github_repository",
         repository_visibility="public",
-        required_files=[],
+        required_files=["README.md"],
     )
     evidence = Evidence(repository_url=repository_url, commit_sha="abc123")
 
-    prepared = prepare_verification(
-        web3=web3,
-        contract_address=contract_address,
-        task_id=7,
-        policy=policy,
-        evidence=evidence,
-    )
+    repository_response = Mock(status_code=200)
+    repository_response.json.return_value = {"private": False}
+
+    with patch("verifier.github_checker.requests.get") as mock_get:
+        mock_get.side_effect = [
+            repository_response,
+            Mock(status_code=200),
+            Mock(status_code=200),
+        ]
+        prepared = prepare_verification(
+            web3=web3,
+            contract_address=contract_address,
+            task_id=7,
+            policy=policy,
+            evidence=evidence,
+        )
+
+    requested_urls = [call.args[0] for call in mock_get.call_args_list]
+    assert requested_urls == [
+        "https://api.github.com/repos/example/project",
+        "https://api.github.com/repos/example/project/commits/abc123",
+        "https://api.github.com/repos/example/project/contents/README.md?ref=abc123",
+    ]
+    assert prepared.report.result.required_files == {"README.md": True}
+    assert prepared.report.result.passed is True
 
     agent_account = MagicMock(address=agent_address)
     verifier_account = MagicMock(address=verifier_address)

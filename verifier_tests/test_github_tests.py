@@ -205,3 +205,17 @@ def test_github_tests_raises_on_workflow_runs_api_error(mock_get):
 
     with pytest.raises(requests.HTTPError):
         check_github_tests(make_policy(), make_evidence())
+
+
+def test_github_tests_rejects_empty_required_files_before_any_request():
+    from dataclasses import replace
+
+    import pytest
+
+    policy = replace(make_policy(), required_files=[])
+
+    with patch("verifier.github_checker.requests.get") as mock_get:
+        with pytest.raises(ValueError, match="at least one required file"):
+            check_github_tests(policy, make_evidence())
+
+    mock_get.assert_not_called()

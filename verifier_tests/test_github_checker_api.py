@@ -218,3 +218,92 @@ def test_github_api_errors_are_not_reported_as_missing_resources(
     ):
         with pytest.raises(requests.HTTPError):
             check_github_repository(make_policy(), make_evidence())
+
+
+def make_policy_with(required_files):
+    from dataclasses import replace
+
+    return replace(make_policy(), required_files=required_files)
+
+
+def test_empty_required_files_is_rejected_before_any_request():
+    with patch("verifier.github_checker.requests.get") as mock_get:
+        with pytest.raises(ValueError, match="at least one required file"):
+            check_github_repository(make_policy_with([]), make_evidence())
+
+    mock_get.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "required_files",
+    [None, "README.md", (), ("README.md",)],
+)
+def test_non_list_required_files_is_rejected_before_any_request(required_files):
+    with patch("verifier.github_checker.requests.get") as mock_get:
+        with pytest.raises(ValueError, match="must be a list"):
+            check_github_repository(
+                make_policy_with(required_files),
+                make_evidence(),
+            )
+
+    mock_get.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "bad_name",
+    [
+        "",
+        "   ",
+        ".",
+        "..",
+        "a/../b",
+        "/README.md",
+        "docs/",
+        "a//b",
+        "README.md?ref=x",
+        "README.md#",
+        "100%.md",
+        "%2e%2e/branches/main",
+        "..\\branches\\main",
+        5,
+    ],
+)
+def test_invalid_required_file_paths_are_rejected_before_any_request(bad_name):
+    with patch("verifier.github_checker.requests.get") as mock_get:
+        with pytest.raises(ValueError, match="Invalid required file path"):
+            check_github_repository(
+                make_policy_with(["README.md", bad_name]),
+                make_evidence(),
+            )
+
+    mock_get.assert_not_called()
+
+
+def test_nested_required_file_paths_are_requested_at_the_evidence_commit():
+    repository_response = Mock(status_code=200)
+    repository_response.json.return_value = {"private": False}
+
+    with patch("verifier.github_checker.requests.get") as mock_get:
+        mock_get.side_effect = [
+            repository_response,
+            Mock(status_code=200),
+            Mock(status_code=200),
+            Mock(status_code=200),
+        ]
+        result = check_github_repository(
+            make_policy_with(["docs/README.md", ".github/workflows/ci.yml"]),
+            make_evidence(),
+        )
+
+    requested_urls = [call.args[0] for call in mock_get.call_args_list]
+    assert requested_urls == [
+        "https://api.github.com/repos/example/project",
+        "https://api.github.com/repos/example/project/commits/abc123",
+        "https://api.github.com/repos/example/project/contents/docs/README.md?ref=abc123",
+        "https://api.github.com/repos/example/project/contents/.github/workflows/ci.yml?ref=abc123",
+    ]
+    assert result.required_files == {
+        "docs/README.md": True,
+        ".github/workflows/ci.yml": True,
+    }
+    assert result.passed is True
