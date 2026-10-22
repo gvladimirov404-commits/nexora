@@ -1,5 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
+import re
 
 from typing import Any
 
@@ -30,13 +31,23 @@ def verify_report(
     if not isinstance(required_sections, (list, tuple)):
         required_sections = ()
 
-    normalized_content = content.casefold()
-
+    content_without_fenced_code = re.sub(
+        r"(?ms)^ {0,3}(`{3,}|~{3,})[^\n]*\n.*?^ {0,3}\1[ \t]*$",
+        "",
+        content,
+    )
+    headings = {
+        match.group(1).strip().rstrip("#").strip().casefold()
+        for match in re.finditer(
+            r"(?m)^ {0,3}#{1,6}[ \t]+(.+?)[ \t]*#*[ \t]*$",
+            content_without_fenced_code,
+        )
+    }
     section_results = {
         section: (
             isinstance(section, str)
             and bool(section.strip())
-            and section.casefold() in normalized_content
+            and section.strip().casefold() in headings
         )
         for section in required_sections
     }
